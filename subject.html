@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Subject | Study Companion</title>
+
+  <style>
+    body {
+      background: #eef4ff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 50px 20px;
+    }
+
+    .subject-page {
+      background: white;
+      max-width: 700px;
+      margin: auto;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(30, 70, 120, 0.15);
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    h1 {
+      color: #1d4ed8;
+      margin-top: 24px;
+    }
+
+    .add-topic {
+      display: flex;
+      gap: 10px;
+      margin: 24px 0;
+    }
+
+    input,
+    select {
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    input {
+      flex: 1;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    #topic-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    #topic-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 12px;
+      padding: 16px;
+      border: 1px solid #dbeafe;
+      border-radius: 10px;
+    }
+
+    .empty-message {
+      color: #64748b;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="subject-page">
+    <a href="dashboard.html">← Back to Dashboard</a>
+
+    <h1 id="subject-title"></h1>
+
+    <div class="add-topic">
+      <input id="topic-name" type="text" placeholder="Example: Linked Lists">
+      <button onclick="addTopic()">+ Add Topic</button>
+    </div>
+
+    <p id="empty-message" class="empty-message">
+      Add the important topics for this subject.
+    </p>
+
+    <ul id="topic-list"></ul>
+  </main>
+
+  <script>
+    const selectedSubject = localStorage.getItem("selectedSubject");
+    document.getElementById("subject-title").textContent = selectedSubject;
+
+    const statusOptions = [
+      "Not started",
+      "Learning",
+      "Completed",
+      "Needs revision"
+    ];
+
+    let topicsBySubject =
+      JSON.parse(localStorage.getItem("topicsBySubject")) || {};
+
+    if (!topicsBySubject[selectedSubject]) {
+      topicsBySubject[selectedSubject] = [];
+    }
+
+    topicsBySubject[selectedSubject] =
+      topicsBySubject[selectedSubject].map(function (topic) {
+        if (typeof topic === "string") {
+          return { name: topic, status: "Not started" };
+        }
+
+        return topic;
+      });
+
+    function saveTopics() {
+      localStorage.setItem(
+        "topicsBySubject",
+        JSON.stringify(topicsBySubject)
+      );
+    }
+
+    function showTopics() {
+      const topicList = document.getElementById("topic-list");
+      const emptyMessage = document.getElementById("empty-message");
+
+      topicList.innerHTML = "";
+
+      if (topicsBySubject[selectedSubject].length === 0) {
+        emptyMessage.style.display = "block";
+      } else {
+        emptyMessage.style.display = "none";
+      }
+
+      topicsBySubject[selectedSubject].forEach(function (topic, index) {
+        const listItem = document.createElement("li");
+
+        const topicText = document.createElement("span");
+        topicText.textContent = topic.name;
+
+        const statusSelect = document.createElement("select");
+
+        statusOptions.forEach(function (status) {
+          const option = document.createElement("option");
+          option.value = status;
+          option.textContent = status;
+
+          if (topic.status === status) {
+            option.selected = true;
+          }
+
+          statusSelect.appendChild(option);
+        });
+
+        statusSelect.onchange = function () {
+          topicsBySubject[selectedSubject][index].status =
+            statusSelect.value;
+
+          saveTopics();
+        };
+
+        listItem.appendChild(topicText);
+        listItem.appendChild(statusSelect);
+        topicList.appendChild(listItem);
+      });
+    }
+
+    function addTopic() {
+      const topicInput = document.getElementById("topic-name");
+      const topicName = topicInput.value.trim();
+
+      if (topicName === "") {
+        return;
+      }
+
+      topicsBySubject[selectedSubject].push({
+        name: topicName,
+        status: "Not started"
+      });
+
+      saveTopics();
+      topicInput.value = "";
+      showTopics();
+    }
+
+    saveTopics();
+    showTopics();
+  </script>
+</body>
+</html>

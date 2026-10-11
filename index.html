@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Study Companion</title>
+
+  <style>
+    body {
+      background: #eef4ff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 50px 20px;
+    }
+
+    .card {
+      background: white;
+      max-width: 400px;
+      margin: auto;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(30, 70, 120, 0.15);
+    }
+
+    h1 {
+      color: #1d4ed8;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #555;
+    }
+
+    label {
+      display: block;
+      margin-top: 18px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 7px;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    #message {
+      text-align: center;
+      color: #dc2626;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card">
+    <h1>Study Companion</h1>
+    <p>Set up your profile to start tracking your topics.</p>
+
+    <label for="name">Your name</label>
+    <input id="name" type="text" placeholder="Enter your name">
+
+    <label for="course">Course / branch</label>
+    <input id="course" type="text" placeholder="Example: BTech CSE">
+
+    <label for="semester">Semester</label>
+    <input id="semester" type="text" placeholder="Example: Semester 1">
+
+    <button onclick="welcomeStudent()">Continue</button>
+    <p id="message"></p>
+  </main>
+
+  <script>
+    function welcomeStudent() {
+      const name = document.getElementById("name").value;
+      const course = document.getElementById("course").value;
+      const semester = document.getElementById("semester").value;
+
+      if (name === "" || course === "" || semester === "") {
+        document.getElementById("message").textContent =
+          "Please fill in all your details.";
+        return;
+      }
+
+      localStorage.setItem("studentName", name);
+      localStorage.setItem("studentCourse", course);
+      localStorage.setItem("studentSemester", semester);
+
+      window.location.href = "dashboard.html";
+    }
+  </script>
+</body>
+</html>
