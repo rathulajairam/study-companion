@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Dashboard | Study Companion</title>
+
+  <style>
+    body {
+      background: #eef4ff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 50px 20px;
+    }
+
+    .dashboard {
+      background: white;
+      max-width: 700px;
+      margin: auto;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(30, 70, 120, 0.15);
+    }
+
+    h1, h2 {
+      color: #1d4ed8;
+    }
+
+    .profile {
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .add-subject {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    #subject-list,
+    #revision-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    #subject-list li,
+    #revision-list li {
+      margin-top: 12px;
+      padding: 16px;
+      border: 1px solid #dbeafe;
+      border-radius: 10px;
+    }
+
+    #subject-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .subject-name {
+      font-weight: bold;
+      color: #1e3a8a;
+    }
+
+    .progress {
+      color: #475569;
+    }
+
+    .empty-message {
+      color: #64748b;
+    }
+
+    .revision-section {
+      margin-top: 35px;
+      padding-top: 10px;
+      border-top: 1px solid #dbeafe;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="dashboard">
+    <h1>Welcome, <span id="student-name"></span>!</h1>
+
+    <p class="profile">
+      <span id="student-course"></span> ·
+      <span id="student-semester"></span>
+    </p>
+
+    <h2>My Subjects</h2>
+
+    <div class="add-subject">
+      <input id="subject-name" type="text" placeholder="Example: Data Structures">
+      <button onclick="addSubject()">+ Add Subject</button>
+    </div>
+
+    <p id="empty-message" class="empty-message">
+      Add your first subject to begin.
+    </p>
+
+    <ul id="subject-list"></ul>
+
+    <section class="revision-section">
+      <h2>Needs Revision</h2>
+
+      <p id="no-revision-message" class="empty-message">
+        No topics need revision right now.
+      </p>
+
+      <ul id="revision-list"></ul>
+    </section>
+  </main>
+
+  <script>
+    const name = localStorage.getItem("studentName");
+    const course = localStorage.getItem("studentCourse");
+    const semester = localStorage.getItem("studentSemester");
+
+    document.getElementById("student-name").textContent = name;
+    document.getElementById("student-course").textContent = course;
+    document.getElementById("student-semester").textContent = semester;
+
+    let subjects = JSON.parse(localStorage.getItem("subjects")) || [];
+
+    const topicsBySubject =
+      JSON.parse(localStorage.getItem("topicsBySubject")) || {};
+
+    function getTopics(subject) {
+      const savedTopics = topicsBySubject[subject] || [];
+
+      return savedTopics.map(function (topic) {
+        if (typeof topic === "string") {
+          return { name: topic, status: "Not started" };
+        }
+
+        return topic;
+      });
+    }
+
+    function openSubject(subject) {
+      localStorage.setItem("selectedSubject", subject);
+      window.location.href = "subject.html";
+    }
+
+    function showSubjects() {
+      const subjectList = document.getElementById("subject-list");
+      const emptyMessage = document.getElementById("empty-message");
+
+      subjectList.innerHTML = "";
+
+      if (subjects.length === 0) {
+        emptyMessage.style.display = "block";
+      } else {
+        emptyMessage.style.display = "none";
+      }
+
+      subjects.forEach(function (subject) {
+        const topics = getTopics(subject);
+
+        const completedTopics = topics.filter(function (topic) {
+          return topic.status === "Completed";
+        });
+
+        const listItem = document.createElement("li");
+        listItem.style.cursor = "pointer";
+
+        const subjectInfo = document.createElement("div");
+
+        const subjectName = document.createElement("div");
+        subjectName.className = "subject-name";
+        subjectName.textContent = subject;
+
+        const progress = document.createElement("div");
+        progress.className = "progress";
+        progress.textContent =
+          completedTopics.length + " / " + topics.length + " completed";
+
+        subjectInfo.appendChild(subjectName);
+        subjectInfo.appendChild(progress);
+
+        listItem.appendChild(subjectInfo);
+
+        listItem.onclick = function () {
+          openSubject(subject);
+        };
+
+        subjectList.appendChild(listItem);
+      });
+    }
+
+    function showRevisionTopics() {
+      const revisionList = document.getElementById("revision-list");
+      const noRevisionMessage =
+        document.getElementById("no-revision-message");
+
+      revisionList.innerHTML = "";
+
+      let revisionCount = 0;
+
+      subjects.forEach(function (subject) {
+        const topics = getTopics(subject);
+
+        topics.forEach(function (topic) {
+          if (topic.status === "Needs revision") {
+            const listItem = document.createElement("li");
+            listItem.textContent = topic.name + " — " + subject;
+            revisionList.appendChild(listItem);
+            revisionCount = revisionCount + 1;
+          }
+        });
+      });
+
+      if (revisionCount === 0) {
+        noRevisionMessage.style.display = "block";
+      } else {
+        noRevisionMessage.style.display = "none";
+      }
+    }
+
+    function addSubject() {
+      const subjectInput = document.getElementById("subject-name");
+      const subjectName = subjectInput.value.trim();
+
+      if (subjectName === "") {
+        return;
+      }
+
+      subjects.push(subjectName);
+      localStorage.setItem("subjects", JSON.stringify(subjects));
+
+      subjectInput.value = "";
+      showSubjects();
+      showRevisionTopics();
+    }
+
+    showSubjects();
+    showRevisionTopics();
+  </script>
+</body>
+</html>
